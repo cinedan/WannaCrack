@@ -3,7 +3,13 @@ package com.example.saideep.lockscreen2;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Vibrator;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,17 +19,34 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class FullscreenActivity extends AppCompatActivity implements View.OnClickListener {
+public class FullscreenActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
      */
     private static final boolean AUTO_HIDE = true;
+
+    private float curX = 0;
+    private float curY = 0;
+    private float curZ = 0;
+
+    private int falling;
+
+    public Vibrator v;
+
+
+    private boolean isNotAllowed = true;
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor linAcceleration;
+
 
     private static final String TAG= "FullscreenActivity";
     /**
@@ -120,6 +143,25 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
 //        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
         setSpecial();
+
+
+
+        falling = 0;
+
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        //*
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
+            // success! we have an accelerometer
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        } else {
+            // fail! we dont have an accelerometer!
+        }
+
+        //initialize vibration
+        v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+
     }
 
 
@@ -160,6 +202,14 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
                 | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
 
+
+        falling = 0;
+
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+
+
+
+
     }
 
     private void toggle() {
@@ -174,10 +224,29 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
     protected void onPause() {
         super.onPause();
 
-        Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.example.saideep.lockscreen2", "com.example.saideep.lockscreen2.FullscreenActivity"));
-        startActivity(intent);
+        if (isNotAllowed) {
+//            Toast.makeText(getApplicationContext(), "setup intent", Toast.LENGTH_SHORT).show();
+
+
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.example.saideep.lockscreen2", "com.example.saideep.lockscreen2.FullscreenActivity"));
+            startActivity(intent);
+
+            finish();
+        }
+
+
+        sensorManager.unregisterListener(this);
+
     }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -229,4 +298,33 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
                 break;
         }
     }
+
+
+    @Override
+    public final void onSensorChanged(SensorEvent event) {
+
+
+        // get the change of the x,y,z values of the accelerometer
+        curX = event.values[0];
+        curY = event.values[1];
+        curZ = event.values[2];
+
+        Log.d("cats", "falling: "+Integer.toString(falling));
+        if(Math.abs(curX + curY + curZ) < 5){
+            falling++;
+        }else{
+            falling = 0;
+        }
+
+        if (falling > 50) {
+            Toast.makeText(getApplicationContext(), "falling!", Toast.LENGTH_LONG).show();
+            v.vibrate(1000);
+            falling = 0;
+            isNotAllowed = false;
+            onDestroy();
+        }
+    }
+
+
+
 }
