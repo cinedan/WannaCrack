@@ -229,10 +229,11 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
 
 
             Intent intent = new Intent();
-            intent.setComponent(new ComponentName("com.example.saideep.lockscreen2", "com.example.saideep.lockscreen2.FullscreenActivity"));
+            intent.setComponent(new ComponentName("com.example.saideep.lockscreen2",
+                    "com.example.saideep.lockscreen2.FullscreenActivity"));
             startActivity(intent);
 
-            finish();
+//            onDestroy();
         }
 
 
@@ -317,11 +318,12 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
         }
 
         if (falling > 50) {
-            Toast.makeText(getApplicationContext(), "falling!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "falling!", Toast.LENGTH_SHORT).show();
             v.vibrate(1000);
             falling = 0;
             isNotAllowed = false;
             onDestroy();
+            finish();
         }
     }
 
