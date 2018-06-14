@@ -32,21 +32,7 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
      */
     private static final boolean AUTO_HIDE = true;
 
-    private float curX = 0;
-    private float curY = 0;
-    private float curZ = 0;
-
-    private int falling;
-
-    public Vibrator v;
-
-
     private boolean isNotAllowed = true;
-
-    private SensorManager sensorManager;
-    private Sensor accelerometer;
-    private Sensor linAcceleration;
-
 
     private static final String TAG= "FullscreenActivity";
     /**
@@ -146,22 +132,6 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
 
 
 
-        falling = 0;
-
-
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        //*
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-            // success! we have an accelerometer
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-        } else {
-            // fail! we dont have an accelerometer!
-        }
-
-        //initialize vibration
-        v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
-
     }
 
 
@@ -203,13 +173,6 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
         decorView.setSystemUiVisibility(uiOptions);
 
 
-        falling = 0;
-
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-
-
-
-
     }
 
     private void toggle() {
@@ -235,9 +198,6 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
 
 //            onDestroy();
         }
-
-
-        sensorManager.unregisterListener(this);
 
     }
 
@@ -305,26 +265,6 @@ public class FullscreenActivity extends AppCompatActivity implements View.OnClic
     public final void onSensorChanged(SensorEvent event) {
 
 
-        // get the change of the x,y,z values of the accelerometer
-        curX = event.values[0];
-        curY = event.values[1];
-        curZ = event.values[2];
-
-        Log.d("cats", "falling: "+Integer.toString(falling));
-        if(Math.abs(curX + curY + curZ) < 5){
-            falling++;
-        }else{
-            falling = 0;
-        }
-
-        if (falling > 50) {
-            Toast.makeText(getApplicationContext(), "falling!", Toast.LENGTH_SHORT).show();
-            v.vibrate(1000);
-            falling = 0;
-            isNotAllowed = false;
-            onDestroy();
-            finish();
-        }
     }
 
 

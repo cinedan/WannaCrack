@@ -31,8 +31,6 @@
             android:name=".MyService"
             android:exported="false"/>
     </application>
-
-
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    
 
 </manifest>
